@@ -38,14 +38,10 @@ def returnTrue(request):
 					firstanswerreview__actions__isnull=True).exclude(answer_owner=request.user).filter(
 						id__in=post_ids_subquery_2).count()
 
-	if counting >= 1:
-		can_show = True
-	else:
-		can_show = False
-
+	can_show = counting >= 1
 	return {
-		'can_show':can_show,
-    }
+	'can_show':can_show,
+	}
 
 def reviewQuestion_cp(request):
 	time = timezone.now() - timedelta(minutes=200)
@@ -84,11 +80,7 @@ def returnTrue_or_False(request):
 
 		counting = Question.objects.filter(firstquestionreview__QuestionReviewBy__isnull=True).exclude(post_owner=request.user).filter(id__in=post_ids_subquery).count()
 
-	if counting >= 1:
-		can_review = True
-	else:
-		can_review = False
-
+	can_review = counting >= 1
 	return {
 		'can_review':can_review
 	}
@@ -117,11 +109,7 @@ def returnLateReview_True_or_False(request):
 					questionans__date__gt=timezone.now() - timedelta(hours=100)).filter(
 						date__gt=timezone.now() - timedelta(minutes=10)).count()
 
-	if counting >= 1:
-		cal_LateRev = True
-	else:
-		cal_LateRev = False
-
+	cal_LateRev = counting >= 1
 	return {
 		'cal_LateRev':cal_LateRev
 	}
@@ -143,11 +131,7 @@ def returnTrue_or_FalseClosedQuestions(request):
 		# Edit .exclude(question_to_closed__is_closed=True), Exclude those questions why are closed on the spot (In Question Detail) without waiting in review queue.
 		counting = ReviewCloseVotes.objects.filter(is_completed=False).exclude(question_to_closed__is_closed=True).exclude(reviewed_by=request.user).count()
 
-	if counting >= 1:
-		areClosedQuestions_Available = True
-	else:
-		areClosedQuestions_Available = False
-
+	areClosedQuestions_Available = counting >= 1
 	return {
 		'areClosedQuestions_Available':areClosedQuestions_Available,
 	}
@@ -167,11 +151,7 @@ def returnTrue_or_FalseUnCloseQuestion_s(request):
 	if request.user.is_authenticated:
 		counting = ReviewQuestionReOpenVotes.objects.filter(is_completed=False).exclude(reopen_reviewed_by=request.user).count()
 
-	if counting >= 1:
-		questionToReOpen_available = True
-	else:
-		questionToReOpen_available = False
-
+	questionToReOpen_available = counting >= 1
 	return {
 		'questionToReOpen_available':questionToReOpen_available,
 	}
@@ -190,11 +170,7 @@ def returnTrue_or_FalseEditPosts(request):
 	if request.user.is_authenticated:
 		counting = ReviewQuestionEdit.objects.filter(is_reviewed=False).exclude(edit_reviewed_by=request.user).count()
 
-	if counting >= 1:
-		editQuestions_review_Available = True
-	else:
-		editQuestions_review_Available = False
-
+	editQuestions_review_Available = counting >= 1
 	return {
 		'editQuestions_review_Available':editQuestions_review_Available,
 	}
@@ -213,11 +189,7 @@ def returnTrue_or_FalseLowPosts(request):
 	if request.user.is_authenticated:
 		counting = ReviewLowQualityPosts.objects.filter(is_reviewed=False).exclude(reviewers=request.user).count()
 
-	if counting >= 1:
-		reviewLowPosts = True
-	else:
-		reviewLowPosts = False
-
+	reviewLowPosts = counting >= 1
 	return {
 		'reviewLowPosts':reviewLowPosts,
 	}
@@ -236,11 +208,7 @@ def returnTrue_or_FalseFlagPosts(request):
 	if request.user.is_authenticated:
 		counting = ReviewFlagPost.objects.filter(flag_is_reviewed=False).exclude(flag_reviewed_by=request.user).count()
 
-	if counting >= 1:
-		is_available_FlagPosts = True
-	else:
-		is_available_FlagPosts = False
-
+	is_available_FlagPosts = counting >= 1
 	return {
 		'is_available_FlagPosts':is_available_FlagPosts
 	}
@@ -259,11 +227,7 @@ def returnTrue_or_FalseFlagComments(request):
 	if request.user.is_authenticated:
 		counting = ReviewFlagComment.objects.filter(c_is_reviewed=False).exclude(c_flag_reviewed_by=request.user).count()
 
-	if counting >= 1:
-		is_available_FlagComments = True
-	else:
-		is_available_FlagComments = False
-
+	is_available_FlagComments = counting >= 1
 	return {
 		'is_available_FlagComments':is_available_FlagComments
 	}

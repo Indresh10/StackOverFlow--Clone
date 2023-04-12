@@ -58,63 +58,59 @@ def calculate_reputation(user_id):
 @register.filter
 def calculateGoldBadges(user_id):
     if user_id.is_authenticated:
-        getAllTheGoldBadges = TagBadge.objects.filter(awarded_to_user=user_id,badge_type="GOLD").count()
-        return getAllTheGoldBadges
+        return TagBadge.objects.filter(
+            awarded_to_user=user_id, badge_type="GOLD"
+        ).count()
 
 
 # It will count and show all "Bronze Badges" on profile right corner.
 @register.filter
 def calculateBronzeBadges(user_id):
     if user_id.is_authenticated:
-        getAllTheBronzeBadges = TagBadge.objects.filter(awarded_to_user=user_id,badge_type="BRONZE").count()
-        return getAllTheBronzeBadges
+        return TagBadge.objects.filter(
+            awarded_to_user=user_id, badge_type="BRONZE"
+        ).count()
 
 
 # It will count and show all "Silver Badges" on profile right corner.
 @register.filter
 def calculatSilvereBadges(user_id):
     if user_id.is_authenticated:
-        getAllTheSilverBadges = TagBadge.objects.filter(awarded_to_user=user_id,badge_type="SILVER").count()
-        return getAllTheSilverBadges
+        return TagBadge.objects.filter(
+            awarded_to_user=user_id, badge_type="SILVER"
+        ).count()
 
 
 @register.filter
 def calculateEarned_Badge_Users(tag):
-    countBadge = TagBadge.objects.filter(id=tag).annotate(Count('awarded_to_user'))
-    return countBadge
+    return TagBadge.objects.filter(id=tag).annotate(Count('awarded_to_user'))
 
 
 @register.filter
 def count_questions_by_tag(user_id,tag):
-    count_questions = Question.objects.filter(post_owner=user_id,tags=tag).count()
-    return count_questions
+    return Question.objects.filter(post_owner=user_id,tags=tag).count()
 
 
 @register.filter
 def count_questions_by_tag_without_user(tag):
-    count_questions_by_tagUser = Question.objects.filter(tags=tag).count()
-    return count_questions_by_tagUser
+    return Question.objects.filter(tags=tag).count()
 
 
 @register.filter
 def count_all_bookmarkers(user_id):
-    countBookmarks = BookmarkQuestion.objects.filter(bookmarked_by=user_id).count()
-    return countBookmarks
+    return BookmarkQuestion.objects.filter(bookmarked_by=user_id).count()
 
 @register.filter
 def count_answers_by_user(user_id):
-    countAnswers = Answer.objects.filter(answer_owner=user_id).count()
-    return countAnswers
+    return Answer.objects.filter(answer_owner=user_id).count()
 
 @register.filter
 def count_questions_by_user(user_id):
-    countQuestions = Question.objects.filter(post_owner=user_id).count()
-    return countQuestions
+    return Question.objects.filter(post_owner=user_id).count()
 
 @register.filter
 def count_questions_all():
-    counted_question_from_all = Question.objects.filter(is_deleted=False).count()
-    return counted_question_from_all
+    return Question.objects.filter(is_deleted=False).count()
 
 # I don't know why but it is not working and will cover in next update.
 @register.filter

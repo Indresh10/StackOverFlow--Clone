@@ -7,11 +7,7 @@ def notificationViewer(request):
 	if request.user.is_authenticated:
 		notifications = Notification.objects.filter(noti_receiver=request.user).order_by('-date_created')
 		countUnreadNotifications = Notification.objects.filter(noti_receiver=request.user, is_read=False).count()
-		if countUnreadNotifications >= 1:
-			showAlert = True
-		else:
-			showAlert = False
-
+		showAlert = countUnreadNotifications >= 1
 	else:
 		notifications = ''
 		countUnreadNotifications = ''

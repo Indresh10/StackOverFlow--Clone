@@ -122,10 +122,7 @@ class ReviewQuestionEdit(models.Model):
 
 
     def __str__(self):
-        if self.is_reviewed:
-            return f"Reviewed"
-        else:
-            return f"On-Going"
+        return "Reviewed" if self.is_reviewed else "On-Going"
 
     # def get_absolute_url(self):
         # return reverse('review:reviewSuggesstedEdit', kwargs={'pk': self.ReviewQuestionEdit.id})
@@ -335,10 +332,7 @@ class ReviewLowQualityPosts(models.Model):
     reviewed_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        if self.is_reviewed:
-            return f"Reviewed"
-        else:
-            return f"Pending"
+        return "Reviewed" if self.is_reviewed else "Pending"
 
 # ---------------------------------------FLAG Q/A-------START
 
@@ -430,10 +424,7 @@ class ReviewFlagPost(models.Model):
     flag_is_reviewed = models.BooleanField(default=False, blank=True, null=True)
 
     def __str__(self):
-        if self.flag_is_reviewed:
-            return f"Reviewed"
-        else:
-            return f"On-Going"
+        return "Reviewed" if self.flag_is_reviewed else "On-Going"
 
 # ---------------------------------------FLAG Q/A-------END
 
@@ -482,10 +473,7 @@ class ReviewFlagComment(models.Model):
     c_is_reviewed = models.BooleanField(default=False)
 
     def __str__(self):
-        if self.c_is_reviewed:
-            return f"Reviewed"
-        else:
-            return f"On-Going"
+        return "Reviewed" if self.c_is_reviewed else "On-Going"
 
 # ---------------------------------------FLAG COMMENT------END
 

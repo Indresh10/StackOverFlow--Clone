@@ -158,12 +158,11 @@ def reviewFlagComments(request, reviewflagcomment_id):
                 return redirect(
                     'review:reviewFlagComments',
                     reviewflagcomment_id=next_flag.id)
-            else:
-                messages.error(request, 'No More Comment Flags To Review')
-                return redirect('profile:home')
+            messages.error(request, 'No More Comment Flags To Review')
+            return redirect('profile:home')
 
-        # else:
-            # messages.error(request, "No More Flags to Review")
+            # else:
+                # messages.error(request, "No More Flags to Review")
 
     else:
         form = ReviewFlagCommentForm(request.POST or None,
@@ -172,20 +171,15 @@ def reviewFlagComments(request, reviewflagcomment_id):
     getThisItemFromReview = ReviewFlagComment.objects.filter(
         flag_of=data).first()
 
+    actionWas = ''
     if getThisItemFromReview:
-        actionWas = ''
         if getThisItemFromReview.c_flagReviewActions == "DELETE_IT":
             actionWas = "Delete_It"
-        elif getThisItemFromReview.c_flagReviewActions == "STAY_AS_IT_IS":
-            actionWas = "No_Action_Required"
         elif getThisItemFromReview.c_flagReviewActions == "SKIP":
             actionWas = "Skipped"
-    else:
-        actionWas = ''
-    if getThisItemFromReview.c_flag_reviewed_by == request.user:
-        is_reviewed = True
-    else:
-        is_reviewed = False
+        elif getThisItemFromReview.c_flagReviewActions == "STAY_AS_IT_IS":
+            actionWas = "No_Action_Required"
+    is_reviewed = getThisItemFromReview.c_flag_reviewed_by == request.user
     # print(actionWas)
 
     context = {'is_reviewed': is_reviewed, 'form': form, 'data': data, }

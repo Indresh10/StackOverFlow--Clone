@@ -7,9 +7,8 @@ def loggedOutFromAllDevices(function):
 		if request.user.is_authenticated:
 			if request.user.profile.logout_on_all_devices == False:
 				return function(request, *args, **kwargs)
-			else:
-				logout(request)
-				return redirect("profile:home")
+			logout(request)
+			return redirect("profile:home")
 
 		else:
 			return redirect('users:login_request')
