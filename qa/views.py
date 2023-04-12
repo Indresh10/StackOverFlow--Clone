@@ -134,21 +134,20 @@ def InlineTagEditingForm(request, question_id):
     if is_ajax(request) and request.method == 'POST':
         form = InlineTagEditForm(
             instance=data, data=request.POST, files=request.FILES)
-        if form.is_valid():
-            if request.user.profile.accessTo_moderatorTools:
-                instance = form.save(commit=False)
-                # instance.user = request.user
-                instance = form.save()
-                form.save_m2m()
-                ser_instance = serializers.serialize('json', [
-                    instance,
-                ])
-                # send to client side.
-                return JsonResponse({"instance": "saved"}, status=200)
-            else:
-                return JsonResponse({'action': 'lackOfPrivelege'})
-        else:
+        if not form.is_valid():
             return JsonResponse({"error": form.errors}, status=400)
+        if request.user.profile.accessTo_moderatorTools:
+            instance = form.save(commit=False)
+            # instance.user = request.user
+            instance = form.save()
+            form.save_m2m()
+            ser_instance = serializers.serialize('json', [
+                instance,
+            ])
+            # send to client side.
+            return JsonResponse({"instance": "saved"}, status=200)
+        else:
+            return JsonResponse({'action': 'lackOfPrivelege'})
     return JsonResponse({"error": ""}, status=400)
 
 
@@ -245,11 +244,10 @@ def deleteQuestion(request, question_id):
     if request.user == question.post_owner:
         question.is_deleted = True
         question.save()
-        return redirect('qa:questionDetailView', pk=question_id)
     else:
         messages.error(request, 'You are not the Post Owner')
-        # return JsonResponse({'action':'notPostOwner'})
-        return redirect('qa:questionDetailView', pk=question_id)
+
+    return redirect('qa:questionDetailView', pk=question_id)
 
 
 def undeleteQuestion(request, question_id):
@@ -260,10 +258,10 @@ def undeleteQuestion(request, question_id):
     if request.user == question.post_owner:
         question.is_deleted = False
         question.save()
-        return redirect('qa:questionDetailView', pk=question_id)
     else:
         messages.error(request, 'You are not post owner')
-        return redirect('qa:questionDetailView', pk=question_id)
+
+    return redirect('qa:questionDetailView', pk=question_id)
 
 
 def delete_answer(request, answer_id):
@@ -275,10 +273,10 @@ def delete_answer(request, answer_id):
         answer.is_deleted = True
         answer.deleted_time = timezone.now()
         answer.save()
-        return redirect('qa:questionDetailView', pk=answer.questionans.id)
     else:
         messages.error(request, 'You are not post owner')
-        return redirect('qa:questionDetailView', pk=answer.questionans.id)
+
+    return redirect('qa:questionDetailView', pk=answer.questionans.id)
 
 
 def undelete_answer(request, answer_id):
@@ -289,10 +287,10 @@ def undelete_answer(request, answer_id):
     if request.user == answer.answer_owner:
         answer.is_deleted = False
         answer.save()
-        return redirect('qa:questionDetailView', pk=answer.questionans.id)
     else:
         messages.error(request, 'You are not post owner')
-        return redirect('qa:questionDetailView', pk=answer.questionans.id)
+
+    return redirect('qa:questionDetailView', pk=answer.questionans.id)
 
 
 def rewardPrivielege(request, which_user):
@@ -338,12 +336,10 @@ def rewardPrivielege(request, which_user):
             for_if="Up Vote",
             type_of_PrivNotify="Privilege_Earned"
         )
-        which_user.profile.save()
     else:
         which_user.profile.voteUpPriv = False
         which_user.profile.flag_posts = False
-        which_user.profile.save()
-
+    which_user.profile.save()
     # If user's reputation is more than 15 then Award Comment Everywhere privilege.
     if totalReputation >= 50:
         # Comment EveryWhere - DONE
@@ -354,12 +350,10 @@ def rewardPrivielege(request, which_user):
             for_if="Comment Everywhere",
             type_of_PrivNotify="Privilege_Earned"
         )
-        which_user.profile.save()
     else:
         # Comment EveryWhere - DONE
         which_user.profile.comment_everywhere_Priv = False
-        which_user.profile.save()
-
+    which_user.profile.save()
     if totalReputation >= 75:
         # Set Bounties - DONE
         which_user.profile.set_bounties = True
@@ -369,12 +363,10 @@ def rewardPrivielege(request, which_user):
             for_if="Set Bounties",
             type_of_PrivNotify="Privilege_Earned"
         )
-        which_user.profile.save()
     else:
         # Set Bounties - DONE
         which_user.profile.set_bounties = False
-        which_user.profile.save()
-
+    which_user.profile.save()
     if totalReputation >= 125:
         # Vote Down - DONE
         which_user.profile.voteDownPriv = True
@@ -384,12 +376,10 @@ def rewardPrivielege(request, which_user):
             for_if="Vote Down",
             type_of_PrivNotify="Privilege_Earned"
         )
-        which_user.profile.save()
     else:
         # Vote Down - DONE
         which_user.profile.voteDownPriv = False
-        which_user.profile.save()
-
+    which_user.profile.save()
     if totalReputation >= 250:
         which_user.profile.view_close_votes_Priv = True
         PrivRepNotification.objects.get_or_create(
@@ -398,11 +388,9 @@ def rewardPrivielege(request, which_user):
             for_if="View Close Votes",
             type_of_PrivNotify="Privilege_Earned"
         )
-        which_user.profile.save()
     else:
         which_user.profile.view_close_votes_Priv = False
-        which_user.profile.save()
-
+    which_user.profile.save()
     if totalReputation >= 500:
         which_user.profile.access_review_queues = True
         PrivRepNotification.objects.get_or_create(
@@ -411,11 +399,9 @@ def rewardPrivielege(request, which_user):
             for_if="Access Review Queues",
             type_of_PrivNotify="Privilege_Earned"
         )
-        which_user.profile.save()
     else:
         which_user.profile.access_review_queues = False
-        which_user.profile.save()
-
+    which_user.profile.save()
     if totalReputation >= 1000:
         which_user.profile.established_user_Priv = True
         PrivRepNotification.objects.get_or_create(
@@ -424,11 +410,9 @@ def rewardPrivielege(request, which_user):
             for_if="Established User",
             type_of_PrivNotify="Privilege_Earned"
         )
-        which_user.profile.save()
     else:
         which_user.profile.established_user_Priv = False
-        which_user.profile.save()
-
+    which_user.profile.save()
     if totalReputation >= 1500:
         which_user.profile.create_tags = True
         PrivRepNotification.objects.get_or_create(
@@ -437,11 +421,9 @@ def rewardPrivielege(request, which_user):
             for_if="Create Tags",
             type_of_PrivNotify="Privilege_Earned"
         )
-        which_user.profile.save()
     else:
         which_user.profile.create_tags = False
-        which_user.profile.save()
-
+    which_user.profile.save()
     if totalReputation >= 2000:
         which_user.profile.edit_questions_answers = True
         PrivRepNotification.objects.get_or_create(
@@ -450,11 +432,9 @@ def rewardPrivielege(request, which_user):
             for_if="Edit Question and Answers",
             type_of_PrivNotify="Privilege_Earned"
         )
-        which_user.profile.save()
     else:
         which_user.profile.edit_questions_answers = False
-        which_user.profile.save()
-
+    which_user.profile.save()
     if totalReputation >= 10000:
         which_user.profile.accessTo_moderatorTools = True
         PrivRepNotification.objects.get_or_create(
@@ -463,11 +443,9 @@ def rewardPrivielege(request, which_user):
             for_if="Access to Moderator Tools",
             type_of_PrivNotify="Privilege_Earned"
         )
-        which_user.profile.save()
     else:
         which_user.profile.accessTo_moderatorTools = False
-        which_user.profile.save()
-
+    which_user.profile.save()
     if totalReputation >= 15000:
         which_user.profile.protect_questions = True
         PrivRepNotification.objects.get_or_create(
@@ -476,11 +454,9 @@ def rewardPrivielege(request, which_user):
             for_if="Protect Questions",
             type_of_PrivNotify="Privilege_Earned"
         )
-        which_user.profile.save()
     else:
         which_user.profile.protect_questions = False
-        which_user.profile.save()
-
+    which_user.profile.save()
     if totalReputation >= 20000:
         which_user.profile.trusted_user_Priv = True
         PrivRepNotification.objects.get_or_create(
@@ -489,11 +465,9 @@ def rewardPrivielege(request, which_user):
             for_if="Trusted User",
             type_of_PrivNotify="Privilege_Earned"
         )
-        which_user.profile.save()
     else:
         which_user.profile.trusted_user_Priv = False
-        which_user.profile.save()
-
+    which_user.profile.save()
     return HttpResponse(status=202)
 
 
@@ -502,110 +476,107 @@ def save_comment(request, question_id):
     For save the comment on question through Ajax
     and award user if eligible
     """
-    if request.method == 'POST':
-        if request.user.profile.comment_everywhere_Priv:
-            comment = request.POST['comment']
-            que = Question.objects.get(pk=question_id)
-            question_URL = request.build_absolute_uri(que.get_absolute_url())
-            commented_by = request.user
-            getComments = CommentQ.objects.filter(
-                commented_by=request.user).count()
-            if getComments >= 10:
-                # createTag = Tag.objects.get_or_create(name="Commentator")
-                TagBadge.objects.get_or_create(
-                    awarded_to_user=commented_by,
-                    badge_type="SILVER",
-                    tag_name="Commentator",
-                    bade_position="BADGE")
-                PrivRepNotification.objects.get_or_create(
-                    for_user=commented_by,
-                    url=question_URL,
-                    type_of_PrivNotify="BADGE_EARNED",
-                    for_if="Commentator",
-                    description="Leave 10 comments"
-                )
+    if request.method != 'POST':
+        return
+    if not request.user.profile.comment_everywhere_Priv:
+        return JsonResponse(
+            {'action': "Need atleast 50 Reputation to Comment"})
+    comment = request.POST['comment']
+    que = Question.objects.get(pk=question_id)
+    question_URL = request.build_absolute_uri(que.get_absolute_url())
+    commented_by = request.user
+    getComments = CommentQ.objects.filter(
+        commented_by=request.user).count()
+    if getComments >= 10:
+        # createTag = Tag.objects.get_or_create(name="Commentator")
+        TagBadge.objects.get_or_create(
+            awarded_to_user=commented_by,
+            badge_type="SILVER",
+            tag_name="Commentator",
+            bade_position="BADGE")
+        PrivRepNotification.objects.get_or_create(
+            for_user=commented_by,
+            url=question_URL,
+            type_of_PrivNotify="BADGE_EARNED",
+            for_if="Commentator",
+            description="Leave 10 comments"
+        )
 
-            if comment != "":
-                createdComment = CommentQ.objects.create(
-                    question_comment=que, comment=comment, commented_by=commented_by)
-                if request.user != que.post_owner:
-                    Notification.objects.create(
-                        noti_receiver=que.post_owner,
-                        type_of_noti="question_comment",
-                        url=question_URL,
-                        question_noti=que)
+    if comment == "":
+        return JsonResponse({'bool': False})
+    createdComment = CommentQ.objects.create(
+        question_comment=que, comment=comment, commented_by=commented_by)
+    if request.user != que.post_owner:
+        Notification.objects.create(
+            noti_receiver=que.post_owner,
+            type_of_noti="question_comment",
+            url=question_URL,
+            question_noti=que)
 
-                # It is getting comment's body then it is finding "@" in the comment-
-                # body and splitting all the other spaces, commas, brackets, etc.
-                # Then after it successfully got the name after @ like @xyz,
-                # then it will look if user with that username is exists or not
-                # and if exists then it will notify the user and if not it will
-                # print error of User.DoesNotExist.
+    # It is getting comment's body then it is finding "@" in the comment-
+    # body and splitting all the other spaces, commas, brackets, etc.
+    # Then after it successfully got the name after @ like @xyz,
+    # then it will look if user with that username is exists or not
+    # and if exists then it will notify the user and if not it will
+    # print error of User.DoesNotExist.
 
-                getCommentBody = createdComment.comment
+    getCommentBody = createdComment.comment
 
-                # Reference link of .find - https://docs.python.org/3/library/stdtypes.html#str.find
-                # Refrence link of split() -
-                # https://python-reference.readthedocs.io/en/latest/docs/str/split.html#example-1
-                user = getCommentBody[getCommentBody.find("@") + 1:].split()[0]
+    # Reference link of .find - https://docs.python.org/3/library/stdtypes.html#str.find
+    # Refrence link of split() -
+    # https://python-reference.readthedocs.io/en/latest/docs/str/split.html#example-1
+    user = getCommentBody[getCommentBody.find("@") + 1:].split()[0]
 
-                # Refrence link of re.split -
-                # https://docs.python.org/3/library/re.html#re.split
-                splitIt = re.split(",(?=(?:[^']*\'[^']*\')*[^']*$)", user)
-                newWord = listTOString(splitIt)
+    # Refrence link of re.split -
+    # https://docs.python.org/3/library/re.html#re.split
+    splitIt = re.split(",(?=(?:[^']*\'[^']*\')*[^']*$)", user)
+    newWord = listTOString(splitIt)
 
                 # Reference link of ObjectDoesNotExist -
                 # https://docs.djangoproject.com/en/4.0/ref/exceptions/#objectdoesnotexist
-                if "@" in getCommentBody:
-                    try:
-                        User.objects.get(username=newWord)
-                        getUserIdByUsername = User.objects.get(
-                            username=newWord)
-                        question_URL = request.build_absolute_uri(
-                            que.get_absolute_url())
-                        send_BLANK_notification = Notification.objects.create(
-                            noti_receiver=getUserIdByUsername,
-                            type_of_noti="BLANK_NOTIFICATION",
-                            url=question_URL,
-                            question_noti=que)
-                        print(getUserIdByUsername)
+    if "@" in getCommentBody:
+        try:
+            User.objects.get(username=newWord)
+            getUserIdByUsername = User.objects.get(
+                username=newWord)
+            question_URL = request.build_absolute_uri(
+                que.get_absolute_url())
+            send_BLANK_notification = Notification.objects.create(
+                noti_receiver=getUserIdByUsername,
+                type_of_noti="BLANK_NOTIFICATION",
+                url=question_URL,
+                question_noti=que)
+            print(getUserIdByUsername)
 
-                    except User.DoesNotExist:
-                        print(
-                            "No User Found with mentioned username " +
-                            newWord +
-                            " in comment " +
-                            createdComment.comment)
+        except User.DoesNotExist:
+            print(
+                f"No User Found with mentioned username {newWord} in comment {createdComment.comment}"
+            )
 
-                return JsonResponse({'bool': True})
-            else:
-                return JsonResponse({'bool': False})
-        else:
-            return JsonResponse(
-                {'action': "Need atleast 50 Reputation to Comment"})
+    return JsonResponse({'bool': True})
 
 
 def load_question_upvotes_downvotes(request, question_id):
     getQuestion = get_object_or_404(Question, pk=question_id)
 
-    serialized_votes = []
-    serialized_votes.append({
+    serialized_votes = [
+        {
             'upvotes': getQuestion.qupvote_set.all().count(),
             'downvotes': getQuestion.qdownvote_set.all().count(),
-        })
-
+        }
+    ]
     return JsonResponse({'results':serialized_votes})
 
 
 def load_answer_upvotes_downvotes(request, answer_id):
     getAnswer = get_object_or_404(Answer, pk=answer_id)
 
-    serialized_votes = []
-    serialized_votes.append({
+    serialized_votes = [
+        {
             'upvotes': getAnswer.a_vote_ups.all().count(),
             'downvotes': getAnswer.a_vote_downs.all().count(),
-        })
-
+        }
+    ]
     return JsonResponse({'results': serialized_votes})
 
 def Ajax_searchUser_Moderators(request):
@@ -761,258 +732,272 @@ def AjaxFlagForm(request, question_id):
 
     if request.method == 'POST':
         Flag_Form = FlagQuestionForm(data=request.POST)
-        if Flag_Form.is_valid():
-            new_post = Flag_Form.save(commit=False)
-            formData = Flag_Form.cleaned_data['actions_Flag_Q']
-
-            if request.user.profile.flag_posts:
-                if formData == "SPAM" or formData == "RUDE_OR_ABUSIVE":
-                    getCreateFlag_object = FlagPost.objects.filter(question_forFlag=data).filter(
-                        Q(actions_Flag_Q="SPAM") | Q(actions_Flag_Q="RUDE_OR_ABUSIVE")).exclude(ended=True).first()
-                    if getCreateFlag_object:
-                        print("First Statement is Excecuting")
-                        new_post.flagged_by = request.user
-                        new_post.question_forFlag = data
-                        new_post.save()
-                        getCreateFlag_object.how_many_votes_on_spamANDRude += 1
-                        getCreateFlag_object.save()
-                        TagBadge.objects.get_or_create(
-                            awarded_to_user=request.user,
-                            badge_type="BRONZE",
-                            tag_name="Citizen Patrol",
-                            bade_position="BADGE",
-                            questionIf_TagOf_Q=data)
-                        # return redirect('qa:questionDetailView', pk=data.id)
-                        PrivRepNotification.objects.get_or_create(
-                            for_user=request.user,
-                            url="#",
-                            type_of_PrivNotify="BADGE_EARNED",
-                            for_if="Citizen Patrol",
-                            description="First flagged post"
-                        )
-
-                    else:
-                        print("Second Statement is Excecuting")
-                        new_post.flagged_by = request.user
-                        new_post.question_forFlag = data
-                        new_post.how_many_votes_on_spamANDRude += 1
-                        new_post.save()
-                        TagBadge.objects.get_or_create(
-                            awarded_to_user=request.user,
-                            badge_type="BRONZE",
-                            tag_name="Citizen Patrol",
-                            bade_position="BADGE")
-                        # createReviewInstance,created = ReviewFlagPost.objects.get_or_create(flag_question_to_view=data)
-                        # createReviewInstance.flag_reviewed_by.add(request.user)
-                        # return redirect('qa:questionDetailView', pk=data.id)
-                        PrivRepNotification.objects.get_or_create(
-                            for_user=request.user,
-                            url="#",
-                            type_of_PrivNotify="BADGE_EARNED",
-                            for_if="Citizen Patrol",
-                            description="First flagged post"
-                        )
-
-                elif formData == "VERY_LOW_QUALITY":
-                    getCreateFlag_object = FlagPost.objects.filter(
-                        question_forFlag=data,
-                        actions_Flag_Q="VERY_LOW_QUALITY").exclude(
-                        ended=True).first()
-                    if getCreateFlag_object:
-                        print("Third Statement is Excecuting")
-                        new_post.flagged_by = request.user
-                        new_post.question_forFlag = data
-                        new_post.save()
-                        # getCreateFlag_object.how_many_votes_on_notAnAnswer += 1
-                        getCreateFlag_object.save()
-                        # createReviewInstance,created = ReviewFlagPost.objects.get_or_create(flag_question_to_view=data, flag_of=new_post)
-                        # createReviewInstance.flag_reviewed_by.add(request.user)
-                        TagBadge.objects.get_or_create(
-                            awarded_to_user=request.user,
-                            badge_type="BRONZE",
-                            tag_name="Citizen Patrol",
-                            bade_position="BADGE")
-                        create_Low_Quality_Post_Instance, cre = LowQualityPostsCheck.objects.get_or_create(
-                            suggested_by=request.user, low_is=data, why_low_quality="Very Low Quality", suggested_through="User")
-                        createLowQualityReviewInstance = ReviewLowQualityPosts.objects.get_or_create(
-                            review_of=create_Low_Quality_Post_Instance, is_question=data)
-                        # return redirect('qa:questionDetailView', pk=data.id)
-                        PrivRepNotification.objects.get_or_create(
-                            for_user=request.user,
-                            url="#",
-                            type_of_PrivNotify="BADGE_EARNED",
-                            for_if="Citizen Patrol",
-                            description="First flagged post"
-                        )
-
-                    else:
-                        print("Fourth Statement is Excecuting")
-                        new_post.flagged_by = request.user
-                        new_post.question_forFlag = data
-                        # new_post.how_many_votes_on_notAnAnswer += 1
-                        new_post.save()
-                        TagBadge.objects.get_or_create(
-                            awarded_to_user=request.user,
-                            badge_type="BRONZE",
-                            tag_name="Citizen Patrol",
-                            bade_position="BADGE")
-                        create_Low_Quality_Post_Instance, cre = LowQualityPostsCheck.objects.get_or_create(
-                            suggested_by=request.user, low_is=data, why_low_quality="Very Low Quality", suggested_through="User")
-                        ReviewLowQualityPosts.objects.get_or_create(
-                            review_of=create_Low_Quality_Post_Instance, is_question=data)
-                        # createReviewInstance,created = ReviewFlagPost.objects.get_or_create(flag_question_to_view=data, flag_of=new_post)
-                        # createReviewInstance.flag_reviewed_by.add(request.user)
-                        # return redirect('qa:questionDetailView', pk=data.id)
-
-                        PrivRepNotification.objects.get_or_create(
-                            for_user=request.user,
-                            url="#",
-                            type_of_PrivNotify="BADGE_EARNED",
-                            for_if="Citizen Patrol",
-                            description="First flagged post"
-                        )
-
-                elif formData == "IN_NEED_OF_MODERATOR_INTERVATION" or formData == "ABOUT_PROFESSIONAL":
-                    getCreateFlag_object = FlagPost.objects.filter(
-                        question_forFlag=data).filter(
-                        Q(
-                            actions_Flag_Q="IN_NEED_OF_MODERATOR_INTERVATION") | Q(
-                            actions_Flag_Q="ABOUT_PROFESSIONAL")).exclude(
-                        ended=True).first()
-                    if getCreateFlag_object:
-                        messages.error(
-                            request, 'Previous Flag is Waiting for Review')
-                    else:
-                        new_post.flagged_by = request.user
-                        new_post.question_forFlag = data
-                        new_post.save()
-                        TagBadge.objects.get_or_create(
-                            awarded_to_user=request.user,
-                            badge_type="BRONZE",
-                            tag_name="Citizen Patrol",
-                            bade_position="BADGE")
-                        createReviewInstance, created = ReviewFlagPost.objects.get_or_create(
-                            flag_question_to_view=data, flag_of=new_post)
-                        createReviewInstance.flag_reviewed_by = request.user
-                        PrivRepNotification.objects.get_or_create(
-                            for_user=request.user,
-                            url="#",
-                            type_of_PrivNotify="BADGE_EARNED",
-                            for_if="Citizen Patrol",
-                            description="First flagged post"
-                        )
-
-                # elif formData == "DUPLICATE" or formData == "OPINION_BASED"
-                # or formData == "NEED_MORE_FOCUS" or formData ==
-                # "NEED_ADDITIONAL_DETAILS" or formData == "NEED_DEBUGGING" or
-                # formData == "NOT_REPRODUCIBLE" or formData ==
-                # "BLANTANLTY_OR_CLARITY" or formData ==
-                # "SEEKING_RECCOMENDATIONS" or:
-                else:
-                    # print("This Statement is Excecuting")
-                    getCreateFlag_object = FlagPost.objects.filter(
-                        question_forFlag=data).filter(
-                        Q(
-                            actions_Flag_Q="DUPLICATE") | Q(
-                            actions_Flag_Q="OPINION_BASED") | Q(
-                            actions_Flag_Q="NEED_MORE_FOCUS") | Q(
-                            actions_Flag_Q="NEED_ADDITIONAL_DETAILS") | Q(
-                            actions_Flag_Q="NEED_DEBUGGING") | Q(
-                                actions_Flag_Q="NOT_REPRODUCIBLE") | Q(
-                                    actions_Flag_Q="BLANTANLTY_OR_CLARITY") | Q(
-                                        actions_Flag_Q="ABOUT_GENERAL_COMPUTING_HAR")).exclude(
-                                            ended=True).first()
-                    if getCreateFlag_object:
-                        print("Last Second Statement is Excecuting")
-                        new_post.flagged_by = request.user
-                        new_post.question_forFlag = data
-
-                        createLowInstance, cre = CloseQuestionVotes.objects.get_or_create(
-                            user=request.user, question_to_closing=data, why_closing="Duplicate", ended=False)
-                        # getInstanceNow = CloseQuestionVotes.objects.filter(id=createLowInstance)
-                        print(createLowInstance.id)
-                        createInstance, created = ReviewCloseVotes.objects.get_or_create(
-                            question_to_closed=data)
-                        createInstance.review_of = createLowInstance
-                        createInstance.save()
-
-                        new_post.save()
-                        getCreateFlag_object.how_many_votes_on_others += 1
-                        getCreateFlag_object.save()
-                        TagBadge.objects.get_or_create(
-                            awarded_to_user=request.user,
-                            badge_type="BRONZE",
-                            tag_name="Citizen Patrol",
-                            bade_position="BADGE")
-                        createReviewInstance, created = ReviewFlagPost.objects.get_or_create(
-                            flag_question_to_view=data)
-                        createReviewInstance.flag_reviewed_by = request.user
-                        # createInstance.review_of = createLowInstance
-                        # return redirect('qa:questionDetailView', pk=data.id)
-                        PrivRepNotification.objects.get_or_create(
-                            for_user=request.user,
-                            url="#",
-                            type_of_PrivNotify="BADGE_EARNED",
-                            for_if="Citizen Patrol",
-                            description="First flagged post"
-                        )
-
-                    else:
-                        print("Last Statement is Excecuting")
-                        new_post.flagged_by = request.user
-                        new_post.question_forFlag = data
-                        new_post.how_many_votes_on_others += 1
-                        new_post.save()
-                        createReviewInstance, created = ReviewFlagPost.objects.get_or_create(
-                            flag_question_to_view=data)
-                        createReviewInstance.flag_reviewed_by = request.user
-
-                        create_Low_Quality_Post_Instance, cre = CloseQuestionVotes.objects.get_or_create(
-                            user=request.user, question_to_closing=data, why_closing="Duplicate", ended=False)
-                        createInstance, created = ReviewCloseVotes.objects.get_or_create(
-                            question_to_closed=data)
-                        TagBadge.objects.get_or_create(
-                            awarded_to_user=request.user,
-                            badge_type="BRONZE",
-                            tag_name="Citizen Patrol",
-                            bade_position="BADGE")
-                        createInstance.review_of = create_Low_Quality_Post_Instance
-                        createInstance.save()
-                        # return redirect('qa:questionDetailView', pk=data.id)
-                        PrivRepNotification.objects.get_or_create(
-                            for_user=request.user,
-                            url="#",
-                            type_of_PrivNotify="BADGE_EARNED",
-                            for_if="Citizen Patrol",
-                            description="First flagged post"
-                        )
-
-                # elif formData == "ABOUT_GENERAL_COMPUTING_HAR" or formData == "ABOUT_PROFESSIONAL":
-                #         new_post.flagged_by = request.user
-                #         new_post.question_forFlag = data
-                #         new_post.save()
-
-                # else:
-                    # messages.error(request, "Response is Out Of Network")
-
-                # new_post.user = request.user
-                # new_post.question_forFlag = data
-                # new_post.save()
-                # return redirect('qa:questionDetailView', pk=data.id,)  #
-                # slug=slug)
-                ser_instance = serializers.serialize('json', [
-                    new_post,
-                ])
-                # send to client side.
-                return JsonResponse({"action": "saved"}, status=200)
-            else:
-                return JsonResponse({'action': "lackOfPrivelege"})
-            # else:
-                # return JsonResponse({"action": "cannotCreate"}, status=200)
-        else:
+        if not Flag_Form.is_valid():
             # some form errors occured.
             return JsonResponse({"error": Flag_Form.errors}, status=400)
 
+        new_post = Flag_Form.save(commit=False)
+        if not request.user.profile.flag_posts:
+            return JsonResponse({'action': "lackOfPrivelege"})
+        formData = Flag_Form.cleaned_data['actions_Flag_Q']
+
+        if formData == "SPAM":
+            if (
+                getCreateFlag_object := FlagPost.objects.filter(
+                    question_forFlag=data
+                )
+                .filter(
+                    Q(actions_Flag_Q="SPAM")
+                    | Q(actions_Flag_Q="RUDE_OR_ABUSIVE")
+                )
+                .exclude(ended=True)
+                .first()
+            ):
+                print("First Statement is Excecuting")
+                new_post.flagged_by = request.user
+                new_post.question_forFlag = data
+                new_post.save()
+                getCreateFlag_object.how_many_votes_on_spamANDRude += 1
+                getCreateFlag_object.save()
+                TagBadge.objects.get_or_create(
+                    awarded_to_user=request.user,
+                    badge_type="BRONZE",
+                    tag_name="Citizen Patrol",
+                    bade_position="BADGE",
+                    questionIf_TagOf_Q=data)
+            else:
+                print("Second Statement is Excecuting")
+                new_post.flagged_by = request.user
+                new_post.question_forFlag = data
+                new_post.how_many_votes_on_spamANDRude += 1
+                new_post.save()
+                TagBadge.objects.get_or_create(
+                    awarded_to_user=request.user,
+                    badge_type="BRONZE",
+                    tag_name="Citizen Patrol",
+                    bade_position="BADGE")
+            # return redirect('qa:questionDetailView', pk=data.id)
+            PrivRepNotification.objects.get_or_create(
+                for_user=request.user,
+                url="#",
+                type_of_PrivNotify="BADGE_EARNED",
+                for_if="Citizen Patrol",
+                description="First flagged post"
+            )
+
+        elif formData == "RUDE_OR_ABUSIVE":
+            if (
+                getCreateFlag_object := FlagPost.objects.filter(
+                    question_forFlag=data
+                )
+                .filter(
+                    Q(actions_Flag_Q="SPAM")
+                    | Q(actions_Flag_Q="RUDE_OR_ABUSIVE")
+                )
+                .exclude(ended=True)
+                .first()
+            ):
+                print("First Statement is Excecuting")
+                new_post.flagged_by = request.user
+                new_post.question_forFlag = data
+                new_post.save()
+                getCreateFlag_object.how_many_votes_on_spamANDRude += 1
+                getCreateFlag_object.save()
+                TagBadge.objects.get_or_create(
+                    awarded_to_user=request.user,
+                    badge_type="BRONZE",
+                    tag_name="Citizen Patrol",
+                    bade_position="BADGE",
+                    questionIf_TagOf_Q=data)
+            else:
+                print("Second Statement is Excecuting")
+                new_post.flagged_by = request.user
+                new_post.question_forFlag = data
+                new_post.how_many_votes_on_spamANDRude += 1
+                new_post.save()
+                TagBadge.objects.get_or_create(
+                    awarded_to_user=request.user,
+                    badge_type="BRONZE",
+                    tag_name="Citizen Patrol",
+                    bade_position="BADGE")
+            # return redirect('qa:questionDetailView', pk=data.id)
+            PrivRepNotification.objects.get_or_create(
+                for_user=request.user,
+                url="#",
+                type_of_PrivNotify="BADGE_EARNED",
+                for_if="Citizen Patrol",
+                description="First flagged post"
+            )
+
+        elif formData == "VERY_LOW_QUALITY":
+            if (
+                getCreateFlag_object := FlagPost.objects.filter(
+                    question_forFlag=data, actions_Flag_Q="VERY_LOW_QUALITY"
+                )
+                .exclude(ended=True)
+                .first()
+            ):
+                print("Third Statement is Excecuting")
+                new_post.flagged_by = request.user
+                new_post.question_forFlag = data
+                new_post.save()
+                # getCreateFlag_object.how_many_votes_on_notAnAnswer += 1
+                getCreateFlag_object.save()
+                # createReviewInstance,created = ReviewFlagPost.objects.get_or_create(flag_question_to_view=data, flag_of=new_post)
+                # createReviewInstance.flag_reviewed_by.add(request.user)
+                TagBadge.objects.get_or_create(
+                    awarded_to_user=request.user,
+                    badge_type="BRONZE",
+                    tag_name="Citizen Patrol",
+                    bade_position="BADGE")
+                create_Low_Quality_Post_Instance, cre = LowQualityPostsCheck.objects.get_or_create(
+                    suggested_by=request.user, low_is=data, why_low_quality="Very Low Quality", suggested_through="User")
+                createLowQualityReviewInstance = ReviewLowQualityPosts.objects.get_or_create(
+                    review_of=create_Low_Quality_Post_Instance, is_question=data)
+            else:
+                print("Fourth Statement is Excecuting")
+                new_post.flagged_by = request.user
+                new_post.question_forFlag = data
+                # new_post.how_many_votes_on_notAnAnswer += 1
+                new_post.save()
+                TagBadge.objects.get_or_create(
+                    awarded_to_user=request.user,
+                    badge_type="BRONZE",
+                    tag_name="Citizen Patrol",
+                    bade_position="BADGE")
+                create_Low_Quality_Post_Instance, cre = LowQualityPostsCheck.objects.get_or_create(
+                    suggested_by=request.user, low_is=data, why_low_quality="Very Low Quality", suggested_through="User")
+                ReviewLowQualityPosts.objects.get_or_create(
+                    review_of=create_Low_Quality_Post_Instance, is_question=data)
+            # return redirect('qa:questionDetailView', pk=data.id)
+            PrivRepNotification.objects.get_or_create(
+                for_user=request.user,
+                url="#",
+                type_of_PrivNotify="BADGE_EARNED",
+                for_if="Citizen Patrol",
+                description="First flagged post"
+            )
+
+        elif formData in [
+            "IN_NEED_OF_MODERATOR_INTERVATION",
+            "ABOUT_PROFESSIONAL",
+        ]:
+            if (
+                getCreateFlag_object := FlagPost.objects.filter(
+                    question_forFlag=data
+                )
+                .filter(
+                    Q(actions_Flag_Q="IN_NEED_OF_MODERATOR_INTERVATION")
+                    | Q(actions_Flag_Q="ABOUT_PROFESSIONAL")
+                )
+                .exclude(ended=True)
+                .first()
+            ):
+                messages.error(
+                    request, 'Previous Flag is Waiting for Review')
+            else:
+                new_post.flagged_by = request.user
+                new_post.question_forFlag = data
+                new_post.save()
+                TagBadge.objects.get_or_create(
+                    awarded_to_user=request.user,
+                    badge_type="BRONZE",
+                    tag_name="Citizen Patrol",
+                    bade_position="BADGE")
+                createReviewInstance, created = ReviewFlagPost.objects.get_or_create(
+                    flag_question_to_view=data, flag_of=new_post)
+                createReviewInstance.flag_reviewed_by = request.user
+                PrivRepNotification.objects.get_or_create(
+                    for_user=request.user,
+                    url="#",
+                    type_of_PrivNotify="BADGE_EARNED",
+                    for_if="Citizen Patrol",
+                    description="First flagged post"
+                )
+
+        else:
+            if (
+                getCreateFlag_object := FlagPost.objects.filter(
+                    question_forFlag=data
+                )
+                .filter(
+                    Q(actions_Flag_Q="DUPLICATE")
+                    | Q(actions_Flag_Q="OPINION_BASED")
+                    | Q(actions_Flag_Q="NEED_MORE_FOCUS")
+                    | Q(actions_Flag_Q="NEED_ADDITIONAL_DETAILS")
+                    | Q(actions_Flag_Q="NEED_DEBUGGING")
+                    | Q(actions_Flag_Q="NOT_REPRODUCIBLE")
+                    | Q(actions_Flag_Q="BLANTANLTY_OR_CLARITY")
+                    | Q(actions_Flag_Q="ABOUT_GENERAL_COMPUTING_HAR")
+                )
+                .exclude(ended=True)
+                .first()
+            ):
+                print("Last Second Statement is Excecuting")
+                new_post.flagged_by = request.user
+                new_post.question_forFlag = data
+
+                createLowInstance, cre = CloseQuestionVotes.objects.get_or_create(
+                    user=request.user, question_to_closing=data, why_closing="Duplicate", ended=False)
+                # getInstanceNow = CloseQuestionVotes.objects.filter(id=createLowInstance)
+                print(createLowInstance.id)
+                createInstance, created = ReviewCloseVotes.objects.get_or_create(
+                    question_to_closed=data)
+                createInstance.review_of = createLowInstance
+                createInstance.save()
+
+                new_post.save()
+                getCreateFlag_object.how_many_votes_on_others += 1
+                getCreateFlag_object.save()
+                TagBadge.objects.get_or_create(
+                    awarded_to_user=request.user,
+                    badge_type="BRONZE",
+                    tag_name="Citizen Patrol",
+                    bade_position="BADGE")
+                createReviewInstance, created = ReviewFlagPost.objects.get_or_create(
+                    flag_question_to_view=data)
+                createReviewInstance.flag_reviewed_by = request.user
+            else:
+                print("Last Statement is Excecuting")
+                new_post.flagged_by = request.user
+                new_post.question_forFlag = data
+                new_post.how_many_votes_on_others += 1
+                new_post.save()
+                createReviewInstance, created = ReviewFlagPost.objects.get_or_create(
+                    flag_question_to_view=data)
+                createReviewInstance.flag_reviewed_by = request.user
+
+                create_Low_Quality_Post_Instance, cre = CloseQuestionVotes.objects.get_or_create(
+                    user=request.user, question_to_closing=data, why_closing="Duplicate", ended=False)
+                createInstance, created = ReviewCloseVotes.objects.get_or_create(
+                    question_to_closed=data)
+                TagBadge.objects.get_or_create(
+                    awarded_to_user=request.user,
+                    badge_type="BRONZE",
+                    tag_name="Citizen Patrol",
+                    bade_position="BADGE")
+                createInstance.review_of = create_Low_Quality_Post_Instance
+                createInstance.save()
+            # createInstance.review_of = createLowInstance
+            # return redirect('qa:questionDetailView', pk=data.id)
+            PrivRepNotification.objects.get_or_create(
+                for_user=request.user,
+                url="#",
+                type_of_PrivNotify="BADGE_EARNED",
+                for_if="Citizen Patrol",
+                description="First flagged post"
+            )
+
+        # new_post.user = request.user
+        # new_post.question_forFlag = data
+        # new_post.save()
+        # return redirect('qa:questionDetailView', pk=data.id,)  #
+        # slug=slug)
+        ser_instance = serializers.serialize('json', [
+            new_post,
+        ])
+        # send to client side.
+        return JsonResponse({"action": "saved"}, status=200)
     # errors occured (if occured)
     return JsonResponse({"error": ""}, status=400)
 

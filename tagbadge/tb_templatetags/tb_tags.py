@@ -7,5 +7,4 @@ register = template.Library()
 
 @register.filter
 def calculateEarned_Badge_Users(tag):
-	counting = TagBadge.objects.filter(id=tag).aggregate(Sum('awarded_to_user'))
-	return counting
+	return TagBadge.objects.filter(id=tag).aggregate(Sum('awarded_to_user'))

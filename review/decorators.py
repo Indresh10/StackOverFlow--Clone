@@ -23,40 +23,40 @@ def timeit(method):
    return timed
 
 def awardReputation(function):
-	def awardIt(request, *args, **kwargs):
-		if request.user.is_authenticated:
-			print("Printing Decorator Stuff \n")
-			pk = kwargs["question_id"]
-			getQuestion = Question.objects.get(pk=pk)
-			print(getQuestion)
-			print(pk)
-			user = request.user
-			print(user)
-			last_24_hours = timezone.now() - timedelta(hours=3)
-			getReputationEarnedInLast_24Hours = Reputation.objects.filter(
-                            awarded_to=getQuestion.post_owner, date_earned__gte=last_24_hours).aggregate(
-                                    Sum('answer_rep_C'),Sum('question_rep_C'))
+   def awardIt(request, *args, **kwargs):
+      if not request.user.is_authenticated:
+         return redirect('users:login_request')
+
+      print("Printing Decorator Stuff \n")
+      pk = kwargs["question_id"]
+      getQuestion = Question.objects.get(pk=pk)
+      print(getQuestion)
+      print(pk)
+      user = request.user
+      print(user)
+      last_24_hours = timezone.now() - timedelta(hours=3)
+      getReputationEarnedInLast_24Hours = Reputation.objects.filter(
+      awarded_to=getQuestion.post_owner, date_earned__gte=last_24_hours).aggregate(
+              Sum('answer_rep_C'),Sum('question_rep_C'))
          # if getReputationEarnedInLast_24Hours
-			d1 = getReputationEarnedInLast_24Hours['question_rep_C__sum']
-			totling2 = getReputationEarnedInLast_24Hours['question_rep_C__sum'] if d1 else 0
-			# print(getAlltheReputation)
-			s2 = getReputationEarnedInLast_24Hours['answer_rep_C__sum']
-			totlingAnsRep2 = getReputationEarnedInLast_24Hours['answer_rep_C__sum'] if s2 else 0
+      d1 = getReputationEarnedInLast_24Hours['question_rep_C__sum']
+      totling2 = getReputationEarnedInLast_24Hours['question_rep_C__sum'] if d1 else 0
+      # print(getAlltheReputation)
+      s2 = getReputationEarnedInLast_24Hours['answer_rep_C__sum']
+      totlingAnsRep2 = getReputationEarnedInLast_24Hours['answer_rep_C__sum'] if s2 else 0
 
-			print("Printing reputation earned in last 24 Hours :-:")
-			print(totling2 + totlingAnsRep2)
-			finalReputation = totling2 + totlingAnsRep2
+      print("Printing reputation earned in last 24 Hours :-:")
+      print(totling2 + totlingAnsRep2)
+      finalReputation = totling2 + totlingAnsRep2
 
-			if finalReputation >= 10:
-				request.user.profile.reputation += 500
-				request.user.profile.save()
-				print("Award the Badge that have to award at 200 reputation earn in 24 Hours")
-			print("\n")
-			return function(request, *args, **kwargs)
-		else:
-			return redirect('users:login_request')
+      if finalReputation >= 10:
+      	request.user.profile.reputation += 500
+      	request.user.profile.save()
+      	print("Award the Badge that have to award at 200 reputation earn in 24 Hours")
+      print("\n")
+      return function(request, *args, **kwargs)
 
-	return awardIt
+   return awardIt
 
 
 def required_500_RepToReview(function):

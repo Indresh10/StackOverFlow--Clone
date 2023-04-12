@@ -50,14 +50,14 @@ def is_ajax(request):
 def Ajax_searchTag(request):
     q = request.GET.get('w')
     results = Tag.objects.filter(name__icontains=q).distinct()
-    serialized_results = []
-    for result in results:
-        serialized_results.append({
+    serialized_results = [
+        {
             'id': result.id,
             'tag_name': result.name,
             # 'results':result,
-            })
-
+        }
+        for result in results
+    ]
     return JsonResponse({'results': serialized_results})
 
 def tagsPage(request):
@@ -112,45 +112,26 @@ def searchTagFromQuery(request):
         tags = query.split(',')
         getQuestions = Question.objects.filter(tags__name__in=tags)
     # tags = ''
-    if "NoAnswers" in filters:
-        bool_1 = True
-    else:
-        bool_1 = False
-
-    if "NoAcceptedAnswer" in filters:
-        bool_2 = True
-    else:
-        bool_2 = False
-
-    if "Bounty" in filters:
-        bool_3 = True
-    else:
-        bool_3 = False
-
-
-
-    if bool_1 and bool_2 == False and bool_3 == False:
+    bool_1 = "NoAnswers" in filters
+    bool_2 = "NoAcceptedAnswer" in filters
+    bool_3 = "Bounty" in filters
+    if bool_1 and not bool_2 and not bool_3:
         print("Only First is True")
 
 
 
-    if bool_2 and bool_1 == False and bool_3 == False:
-        print("Only Second is True")
+    if bool_2:
+        if not bool_1 and not bool_3:
+            print("Only Second is True")
 
 
 
-    if bool_2 and bool_1 == True and bool_3 == False:
-        print("First and Second is True")
+        if bool_1 and not bool_3:
+            print("First and Second is True")
 
 
-    if bool_1 and bool_3 == True and bool_2 == False:
+    if bool_1 and bool_3 and not bool_2:
         print("First and Third is True")
-
-
-    if bool_2 and bool_3 == True and bool_2 == False:
-        print("Second and Third is True")
-
-
 
 
 # qsts_pks = QueryStringTag.objects.filter(tag__pk__in=['12', '14', '15']).values_list('id', flat=True)

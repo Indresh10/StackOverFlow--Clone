@@ -110,18 +110,16 @@ class Question(models.Model):
 
     @property
     def expireBounty(self):
-        if self.is_bountied:
-            if self.bounty_date_announced < timezone.now() - timedelta(days=7):
-                self.is_bountied = False
-                self.save()
+        if (
+            self.is_bountied
+            and self.bounty_date_announced < timezone.now() - timedelta(days=7)
+        ):
+            self.is_bountied = False
+            self.save()
 
     @property
     def is_question_bountied(self):
-        if self.is_bountied:
-            hideBountyButton = True
-        else:
-            hideBountyButton = False 
-        return hideBountyButton
+        return bool(self.is_bountied)
 
     # @property
     # def count_questions(self):
